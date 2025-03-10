@@ -171,4 +171,4 @@ cython_debug/
 .pypirc
 
 # numpy zip files
-.npz
+*.npz
