@@ -4,6 +4,8 @@ import cv2 as cv
 import os
 import csv
 import shutil
+import subprocess
+import imageio
 
 def yield_video(path):
     '''
@@ -18,17 +20,24 @@ def yield_video(path):
         - n is the width of each frame
         - 3 is for three color channels, R, G, B
     '''
-    cap = cv.VideoCapture(path)
-    if not cap.isOpened():
-        print("Cannot open camera")
-        exit()
-    while True:
-        ret, img = cap.read() # read one frame from the 'capture' object; img is (H, W, C)
-        if ret:
-            img = cv.cvtColor(img, cv.COLOR_BGR2RGB).transpose(2, 0, 1)
-            yield img
-        else:
-            break
+    print(path)
+    video = imageio.get_reader(path)
+    for frame in video:
+        frame = cv.cvtColor(frame, cv.COLOR_BGR2RGB).transpose(2, 0, 1)
+        yield frame
+#     print(path)
+#     cap = cv.VideoCapture(path)
+#     #cap = cv.cudacodec.VideoReader(path)
+#     if not cap.isOpened():
+#         print("Cannot open camera")
+#         exit()
+#     while True:
+#         ret, img = cap.read() # read one frame from the 'capture' object; img is (H, W, C)
+#         if ret:
+#             img = cv.cvtColor(img, cv.COLOR_BGR2RGB).transpose(2, 0, 1)
+#             yield img
+#         else:
+#             break
 
 def yield_pose(path):
     '''
@@ -148,20 +157,20 @@ def convert_segmenation_to_numpy(path, outname):
     i = 0
     for subdir, dirs, files in os.walk(path):
 
-        if 'Video.avi' in files:
-            video_path = os.path.join(subdir, 'Video.avi')
+        if 'Video1.avi' in files:
+            video_path = os.path.join(subdir, 'Video1.avi')
             vid_generator = yield_video(video_path)
 
             left_generator = None
             right_generator = None
-            if 'Segmentation.avi' in files:
-                left_path = os.path.join(subdir, 'Segmentation.avi')
+            if 'Segmentation1.avi' in files:
+                left_path = os.path.join(subdir, 'Segmentation1.avi')
                 left_generator = yield_video(left_path)
-            elif 'Left_Instrument_Segmentation.avi' in files:
-                left_path = os.path.join(subdir, 'Left_Instrument_Segmentation.avi')
+            elif 'Left_Instrument_Segmentation1.avi' in files:
+                left_path = os.path.join(subdir, 'Left_Instrument_Segmentation1.avi')
                 left_generator = yield_video(left_path)
-            if 'Right_Instrument_Segmentation.avi' in files:
-                right_path = os.path.join(subdir, 'Right_Instrument_Segmentation.avi')
+            if 'Right_Instrument_Segmentation1.avi' in files:
+                right_path = os.path.join(subdir, 'Right_Instrument_Segmentation1.avi')
                 right_generator = yield_video(right_path)
             else:
                 right_generator = yield_zeros()
@@ -185,8 +194,8 @@ def convert_tracking_to_numpy(path, outname):
     right_pose_array = []
     for subdir, dirs, files in os.walk(path):
 
-        if 'Video.avi' in files:
-            video_path = os.path.join(subdir, 'Video.avi')
+        if 'Video1.avi' in files:
+            video_path = os.path.join(subdir, 'Video1.avi')
             vid_generator = yield_video(video_path)
 
             left_generator = None
@@ -253,21 +262,21 @@ def convert_segmenation_to_numpy_individual(path, outpath):
     i = 0
     for subdir, dirs, files in os.walk(path):
 
-        if 'Video.avi' in files:
-            video_path = os.path.join(subdir, 'Video.avi')
+        if 'Video1.avi' in files:
+            video_path = os.path.join(subdir, 'Video1.avi')
             vid_generator = yield_video(video_path)
 
             left_generator = None
             right_generator = None
-            if 'Segmentation.avi' in files:
-                left_path = os.path.join(subdir, 'Segmentation.avi')
+            if 'Segmentation1.avi' in files:
+                left_path = os.path.join(subdir, 'Segmentation1.avi')
                 left_generator = yield_video(left_path)
-            elif 'Left_Instrument_Segmentation.avi' in files:
-                left_path = os.path.join(subdir, 'Left_Instrument_Segmentation.avi')
+            elif 'Left_Instrument_Segmentation1.avi' in files:
+                left_path = os.path.join(subdir, 'Left_Instrument_Segmentation1.avi')
                 left_generator = yield_video(left_path)
-            if 'Right_Instrument_Segmentation.avi' in files:
+            if 'Right_Instrument_Segmentation1.avi' in files:
                 "right"
-                right_path = os.path.join(subdir, 'Right_Instrument_Segmentation.avi')
+                right_path = os.path.join(subdir, 'Right_Instrument_Segmentation1.avi')
                 right_generator = yield_video(right_path)
             else:
                 right_generator = yield_zeros()
@@ -289,8 +298,8 @@ def convert_tracking_to_numpy_individual(path, outpath):
     i = 0
     for subdir, dirs, files in os.walk(path):
 
-        if 'Video.avi' in files:
-            video_path = os.path.join(subdir, 'Video.avi')
+        if 'Video1.avi' in files:
+            video_path = os.path.join(subdir, 'Video1.avi')
             vid_generator = yield_video(video_path)
 
             left_generator = None
