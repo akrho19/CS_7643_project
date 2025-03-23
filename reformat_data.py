@@ -229,7 +229,7 @@ def binarize_mask(mask_frame):
     # second channel for head
     new_mask = np.empty((2,mask_frame.shape[1], mask_frame.shape[2]))
     new_mask[0,:,:] = mask_frame[1,:,:] > 150 # shaft
-    new_mask[1,:,:] =  mask_frame[1,:,:] > 60 - new_mask[0,:,:] # head
+    new_mask[1,:,:] =  np.logical_and(mask_frame[1,:,:] > 60, mask_frame[1,:,:] <= 150) # head
     return new_mask
 
 def convert_segmenation_to_numpy_individual(path, outpath):
