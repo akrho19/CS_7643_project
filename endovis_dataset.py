@@ -16,11 +16,12 @@ class EndovisDataset(Dataset):
         Returns 
             data: (3, h, w)  numpy array
             truth: 
-                if segmentation: a (4, h, w) numpy array, where each channel represents:
+                if segmentation: a (5, h, w) numpy array, where each channel represents:
                     0: left shaft
                     1: left tool
                     2: right shaft
                     3: right tool
+                    4: background
                 if pose, a (2, 7) numpy array, where each channel represents:
                     0: left pose
                     1: right pose
@@ -31,4 +32,6 @@ class EndovisDataset(Dataset):
         loaded_data = np.load(os.path.join(self.folder_path, "%d.npz" % idx), allow_pickle=True)
         data = loaded_data["data"].astype(np.float32) / 255
         truth = np.concatenate((loaded_data['left_mask'], loaded_data['right_mask']), axis=0).astype(np.float32)
+        if truth.shape[0] > 2:
+            truth = np.concatenate((truth, np.expand_dims(loaded_data['background'], axis=0)), axis=0).astype(np.float32)
         return data, truth

@@ -172,3 +172,5 @@ cython_debug/
 
 # numpy zip files
 *.npz
+# model paths
+*.pth
