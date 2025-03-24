@@ -1,11 +1,19 @@
 # +
 import torch
 import matplotlib.pyplot as plt
+import torch.nn.functional as F
 
-def model_output_to_prediction(output):
-    max_idxs = torch.argmax(output, dim=1, keepdim=True)
-    return torch.zeros_like(output).scatter_(1, max_idxs, 1)
+def model_output_to_prediction_ce(output):
+    print(output.shape)
+    maxes, _ = output.max(0, keepdim=True)
+    print(maxes.shape)
+    mask = output >= maxes
+    return mask.float()
     
+def model_output_to_prediction_bce(output, threshold):
+    output = F.sigmoid(output)
+    return (output > threshold).float()
+
 
 
 # -
@@ -102,7 +110,7 @@ def show_images(original, truth, output, labels):
     figure = plt.figure()
     for i in range(0,C):
         plt.subplot(1,C,i+1)
-        plt.imshow(truth[i,...], cmap='gray')
+        plt.imshow(truth[i,...], vmin=0, vmax=1, cmap='gray')
         plt.title(labels[i])
     plt.show()
     
@@ -114,7 +122,7 @@ def show_images(original, truth, output, labels):
     figure = plt.figure()
     for i in range(0,C):
         plt.subplot(1,C,i+1)
-        plt.imshow(output[i,...], cmap='gray')
+        plt.imshow(output[i,...], vmin=0, vmax=1, cmap='gray')
         plt.title(labels[i])
     plt.show()
 

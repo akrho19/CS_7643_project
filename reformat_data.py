@@ -161,8 +161,8 @@ def convert_segmenation_to_numpy(path, outname):
             video_path = os.path.join(subdir, 'Video1.avi')
             vid_generator = yield_video(video_path)
 
-            left_generator = None
-            right_generator = None
+            left_generator = yield_zeros()
+            right_generator = yield_zeros()
             if 'Segmentation1.avi' in files:
                 left_path = os.path.join(subdir, 'Segmentation1.avi')
                 left_generator = yield_video(left_path)
@@ -198,8 +198,8 @@ def convert_tracking_to_numpy(path, outname):
             video_path = os.path.join(subdir, 'Video1.avi')
             vid_generator = yield_video(video_path)
 
-            left_generator = None
-            right_generator = None
+            left_generator = yield_empty_pose()
+            right_generator = yield_empty_pose()
             if 'Pose.txt' in files:
                 left_path = os.path.join(subdir, 'Pose.txt')
                 left_generator = yield_pose(left_path)
@@ -266,8 +266,8 @@ def convert_segmenation_to_numpy_individual(path, outpath):
             video_path = os.path.join(subdir, 'Video1.avi')
             vid_generator = yield_video(video_path)
 
-            left_generator = None
-            right_generator = None
+            left_generator = yield_zeros()
+            right_generator = yield_zeros()
             if 'Segmentation1.avi' in files:
                 left_path = os.path.join(subdir, 'Segmentation1.avi')
                 left_generator = yield_video(left_path)
@@ -278,14 +278,16 @@ def convert_segmenation_to_numpy_individual(path, outpath):
                 "right"
                 right_path = os.path.join(subdir, 'Right_Instrument_Segmentation1.avi')
                 right_generator = yield_video(right_path)
-            else:
-                right_generator = yield_zeros()
+#             else:
+#                 right_generator = yield_zeros()
 
             for frame in vid_generator:
-
+                left_mask=binarize_mask(next(left_generator))
+                right_mask=binarize_mask(next(right_generator))
+                background = np.logical_not(np.any(np.concatenate((left_mask, right_mask), axis=0), axis=0))
                 np.savez(os.path.join(outpath, str(i)+".npz"), data=frame, \
-                        left_mask=binarize_mask(next(left_generator)), \
-                        right_mask=binarize_mask(next(right_generator)))
+                        left_mask=left_mask, \
+                        right_mask=right_mask, background=background)
                 i += 1
         #print(".")
 
@@ -302,8 +304,8 @@ def convert_tracking_to_numpy_individual(path, outpath):
             video_path = os.path.join(subdir, 'Video1.avi')
             vid_generator = yield_video(video_path)
 
-            left_generator = None
-            right_generator = None
+            left_generator = yield_empty_pose()
+            right_generator = yield_empty_pose()
             if 'Pose.txt' in files:
                 left_path = os.path.join(subdir, 'Pose.txt')
                 left_generator = yield_pose(left_path)
@@ -317,9 +319,11 @@ def convert_tracking_to_numpy_individual(path, outpath):
                 right_generator = yield_empty_pose()
 
             for frame in vid_generator:
+                left_mask = next(left_generator)
+                right_mask = next(right_generator)
                 np.savez(os.path.join(outpath, str(i)+".npz"), data=frame, \
-                        left_mask=next(left_generator), \
-                        right_mask=next(right_generator))
+                        left_mask=left_mask, \
+                        right_mask=right_mask)
                 i += 1
         #print(".")
 
