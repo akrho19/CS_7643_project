@@ -5,7 +5,7 @@ import torch.nn.functional as F
 
 def model_output_to_prediction_ce(output):
     print(output.shape)
-    maxes, _ = output.max(0, keepdim=True)
+    maxes, _ = output.max(-3, keepdim=True)
     print(maxes.shape)
     mask = output >= maxes
     return mask.float()
