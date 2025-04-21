@@ -37,6 +37,8 @@ def visualize_pose(frame, pose, center_hue=YELLOW):
         start_point = (round(tracked_point_x), round(tracked_point_y))
         end_point = (round(tracked_point_x + shaft_axis_x*VECTOR_LENGTH), \
                     round(tracked_point_y + shaft_axis_y*VECTOR_LENGTH))
+        print(frame.shape)
+        print(cv.line(frame, start_point, end_point, BLUE, 5).shape)
         frame = cv.line(frame, start_point, end_point, BLUE, 5)
 
         # Draw the tool axis
