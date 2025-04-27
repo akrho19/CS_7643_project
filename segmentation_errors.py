@@ -84,18 +84,22 @@ def make_histograms(data, labels, xlabel=["Rate"], ylabel=["Count"], xlim=None, 
 #        print(labels[i] + " RMS: %f" % np.sqrt(np.mean(np.square(currentData))))
 #         print(labels[i] + " Percent Within 10 units: %f %%" % (100*(np.sum(np.absolute(currentData) <= 10)/len(currentData))))
 #         print(labels[i] + " Median absolute error: %f" % np.median(np.absolute(currentData)))
-        plt.subplot(-(data.shape[1]//-2), 2, i+1)
+        #plt.subplot(-(data.shape[1]//-2), 2, i+1)
+        plt.subplot(1, len(labels), i+1)
         plt.hist(currentData, bins=n_bins, range=xlim)
         plt.xlim(xlim)
         plt.xlabel(xlabel[i] if len(xlabel) > 1 else xlabel[0])
         plt.ylabel(ylabel[i]if len(ylabel) > 1 else ylabel[0])
         plt.title(labels[i])
+        
 
+    plt.tight_layout()
+    
     plt.show()
 
 def show_images(original, truth, output, labels):
     C = truth.shape[0]
-    
+    print("Original")
     print(original.shape)
     
     figure = plt.figure()
@@ -104,6 +108,7 @@ def show_images(original, truth, output, labels):
     plt.show()
 
     print("Truth:")
+    print(truth.shape)
     print(torch.min(truth))
     print(torch.max(truth))
     print("Ground Truth:")
@@ -115,14 +120,13 @@ def show_images(original, truth, output, labels):
     plt.show()
     
     print("Output:")
+    print(output.shape)
     print(torch.min(output))
     print(torch.max(output))
-    
-    print("Output:")
     figure = plt.figure()
     for i in range(0,C):
         plt.subplot(1,C,i+1)
-        plt.imshow(output[i,...], vmin=0, vmax=1, cmap='gray')
+        plt.imshow(output[i,...], cmap='gray') #, vmin=0, vmax=1, )
         plt.title(labels[i])
     plt.show()
 
