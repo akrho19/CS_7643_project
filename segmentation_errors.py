@@ -2,10 +2,12 @@
 import torch
 import matplotlib.pyplot as plt
 import torch.nn.functional as F
+import numpy as np
+import math
 
 def model_output_to_prediction_ce(output):
     print(output.shape)
-    maxes, _ = output.max(0, keepdim=True)
+    maxes, _ = output.max(-3, keepdim=True)
     print(maxes.shape)
     mask = output >= maxes
     return mask.float()
@@ -80,22 +82,28 @@ def make_histograms(data, labels, xlabel=["Rate"], ylabel=["Count"], xlim=None, 
     for i in range(0,len(labels)):
         print(i)
         currentData = data[:,i]
+        currentData =  currentData[~currentData.isnan()]
         print(labels[i] + " Mean: %f" % torch.mean(currentData))
 #        print(labels[i] + " RMS: %f" % np.sqrt(np.mean(np.square(currentData))))
 #         print(labels[i] + " Percent Within 10 units: %f %%" % (100*(np.sum(np.absolute(currentData) <= 10)/len(currentData))))
 #         print(labels[i] + " Median absolute error: %f" % np.median(np.absolute(currentData)))
-        plt.subplot(-(data.shape[1]//-2), 2, i+1)
+        #plt.subplot(-(data.shape[1]//-2), 2, i+1)
+        #plt.subplot(1, len(labels), i+1)
+        plt.subplot(2, 3, i+1)
         plt.hist(currentData, bins=n_bins, range=xlim)
         plt.xlim(xlim)
         plt.xlabel(xlabel[i] if len(xlabel) > 1 else xlabel[0])
         plt.ylabel(ylabel[i]if len(ylabel) > 1 else ylabel[0])
         plt.title(labels[i])
+        
 
+    plt.tight_layout()
+    
     plt.show()
 
 def show_images(original, truth, output, labels):
     C = truth.shape[0]
-    
+    print("Original")
     print(original.shape)
     
     figure = plt.figure()
@@ -104,6 +112,7 @@ def show_images(original, truth, output, labels):
     plt.show()
 
     print("Truth:")
+    print(truth.shape)
     print(torch.min(truth))
     print(torch.max(truth))
     print("Ground Truth:")
@@ -115,15 +124,48 @@ def show_images(original, truth, output, labels):
     plt.show()
     
     print("Output:")
+    print(output.shape)
     print(torch.min(output))
     print(torch.max(output))
-    
-    print("Output:")
     figure = plt.figure()
     for i in range(0,C):
         plt.subplot(1,C,i+1)
-        plt.imshow(output[i,...], vmin=0, vmax=1, cmap='gray')
+        plt.imshow(output[i,...], cmap='gray') #, vmin=0, vmax=1, )
         plt.title(labels[i])
     plt.show()
 
-        
+
+def get_tracking_error(truth, guess):
+    truth_tracked_point_x = truth[0]
+    truth_tracked_point_y = truth[1]
+    truth_shaft = np.array([truth[2], truth[3]])
+    truth_head = np.array([truth[4], truth[5]])
+    truth_clasper_angle = truth[6]
+
+    guess_tracked_point_x = guess[0]
+    guess_tracked_point_y = guess[1]
+    guess_shaft = np.array([guess[2], guess[3]])
+    guess_head = np.array([guess[4], guess[5]])
+    guess_clasper_angle = guess[6]
+
+    dx = guess_tracked_point_x - truth_tracked_point_x
+    dy = guess_tracked_point_y - truth_tracked_point_y
+    d_euclidean = (dx**2 + dy**2) **.5
+
+    try:
+        d_shaft_angle = math.acos(np.dot(truth_shaft, guess_shaft)/(np.linalg.norm(truth_shaft)*np.linalg.norm(guess_shaft)))*180/math.pi
+        if d_shaft_angle > 90:
+            d_shaft_angle = 180 - d_shaft_angle
+    except:
+        d_shaft_angle = 0
+
+    try:
+        d_head_angle = math.acos(np.dot(truth_head, guess_head)/(np.linalg.norm(truth_head)*np.linalg.norm(guess_head)))*180/math.pi
+        if d_head_angle > 90:
+            d_head_angle = 180 - d_head_angle
+    except:
+        d_head_angle = 0
+
+    d_clasper = truth_clasper_angle - guess_clasper_angle
+
+    return dx, dy, d_shaft_angle, d_head_angle, d_euclidean, d_clasper      
